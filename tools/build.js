@@ -33,14 +33,30 @@ if (existsSync(uploadsSrcDir)) {
   cpSync(uploadsSrcDir, uploadsDestDir, { recursive: true });
 }
 
-// Ensure the ISRO Kannada podcast is present in uploads if source is in media/ISRO
-const isroSource = path.join(mediaDir, 'ISRO', 'ಸೈಕಲ್_ನಿಂದ_ಚಂದ್ರಯಾನದವರೆಗೆ_ಇಸ್ರೋದ_ಅಸಾಧಾರಣ_ಪಯಣ.m4a');
-const isroUpload = path.join(uploadsDestDir, '9ba847d1-7cee-4767-8186-32f4b2e809b7.m4a');
-if (existsSync(isroSource) && !existsSync(isroUpload)) {
-  cpSync(isroSource, isroUpload);
-  if (!existsSync(path.join(uploadsSrcDir, '9ba847d1-7cee-4767-8186-32f4b2e809b7.m4a'))) {
-    mkdirSync(uploadsSrcDir, { recursive: true });
-    cpSync(isroSource, path.join(uploadsSrcDir, '9ba847d1-7cee-4767-8186-32f4b2e809b7.m4a'));
+// Ensure ISRO podcasts (Kannada, Hindi, English) are present in uploads if source is in media/ISRO
+const isroFiles = [
+  {
+    src: path.join(mediaDir, 'ISRO', 'ಸೈಕಲ್_ನಿಂದ_ಚಂದ್ರಯಾನದವರೆಗೆ_ಇಸ್ರೋದ_ಅಸಾಧಾರಣ_ಪಯಣ.m4a'),
+    destName: '9ba847d1-7cee-4767-8186-32f4b2e809b7.m4a',
+  },
+  {
+    src: path.join(mediaDir, 'ISRO', 'Hindi', 'साइकिल_से_चांद_तक_इसरो_का_सफर.m4a'),
+    destName: '93b9a78e-d1ed-4628-b396-0f46923c834e.m4a',
+  },
+  {
+    src: path.join(mediaDir, 'ISRO', 'english', 'How_India_Reached_Mars_From_Bicycles.m4a'),
+    destName: 'a2067ee6-cb12-43e0-a30b-b3db425a3e32.m4a',
+  },
+];
+
+for (const { src, destName } of isroFiles) {
+  const destUpload = path.join(uploadsDestDir, destName);
+  if (existsSync(src) && !existsSync(destUpload)) {
+    cpSync(src, destUpload);
+    if (!existsSync(path.join(uploadsSrcDir, destName))) {
+      mkdirSync(uploadsSrcDir, { recursive: true });
+      cpSync(src, path.join(uploadsSrcDir, destName));
+    }
   }
 }
 

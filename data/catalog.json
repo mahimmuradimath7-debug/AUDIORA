@@ -2,6 +2,38 @@
   "version": 1,
   "episodes": [
     {
+      "id": "66690a26-871f-4606-b318-25d2d39220e1",
+      "title": "How India Reached Mars: From Bicycles to Deep Space",
+      "show": "ISRO Stories · The Space Odyssey",
+      "host": "Mahim S Muradimath",
+      "description": "From transporting rocket parts on bicycles in Thumba to historic lunar landings and reaching Mars on a maiden voyage, discover the extraordinary, resilient journey of the Indian Space Research Organisation (ISRO).",
+      "language": "en",
+      "category": "Technology",
+      "mood": "Inspired",
+      "artwork": "orbit",
+      "duration": 3239.7,
+      "audioUrl": "/media/uploads/a2067ee6-cb12-43e0-a30b-b3db425a3e32.m4a",
+      "publishedAt": "2026-10-04T09:40:00.000Z",
+      "featured": false,
+      "demo": false
+    },
+    {
+      "id": "e8eb4bb0-1413-4caf-8704-931e42d0cb31",
+      "title": "साइकिल से चांद तक: इसरो का सफर",
+      "show": "इसरो की कहानियां · ISRO Stories",
+      "host": "महिम एस मुरादीमठ · Mahim S Muradimath",
+      "description": "साइकिल पर रॉकेट के पुर्जे ढोने के शुरुआती दिनों से लेकर चंद्रयान और मंगलयान तक, भारतीय अंतरिक्ष अनुसंधान संगठन (ISRO) की असाधारण, प्रेरक और ऐतिहासिक यात्रा।",
+      "language": "hi",
+      "category": "Technology",
+      "mood": "Inspired",
+      "artwork": "orbit",
+      "duration": 1276.8,
+      "audioUrl": "/media/uploads/93b9a78e-d1ed-4628-b396-0f46923c834e.m4a",
+      "publishedAt": "2026-10-04T09:35:00.000Z",
+      "featured": false,
+      "demo": false
+    },
+    {
       "id": "c9bf1fae-d64c-4069-9324-8256f34edc58",
       "title": "ಸೈಕಲ್‌ನಿಂದ ಚಂದ್ರಯಾನದವರೆಗೆ: ಇಸ್ರೋದ ಅಸಾಧಾರಣ ಪಯಣ",
       "show": "ಇಸ್ರೋ ಕಥೆಗಳು · ISRO Stories",
@@ -19,6 +51,8 @@
     }
   ],
   "uploads": [
+    "a2067ee6-cb12-43e0-a30b-b3db425a3e32.m4a",
+    "93b9a78e-d1ed-4628-b396-0f46923c834e.m4a",
     "9ba847d1-7cee-4767-8186-32f4b2e809b7.m4a"
   ]
 }
