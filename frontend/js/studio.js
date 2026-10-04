@@ -155,9 +155,12 @@ export class Studio {
       const cloudNotice = config?.supabase?.enabled
         ? '<span class="studio-cloud-badge">⚡ Supabase Cloud Connected</span>'
         : '';
-      status.innerHTML = `${icon('check')}<div><strong>The studio is ready for your story.</strong><p>You’ll need this server’s publishing token to upload and publish. ${cloudNotice}</p></div>`;
+      const vercelNotice = config?.isVercel
+        ? '<p class="field-hint" style="margin-top:4px;">Hosted on Vercel Serverless. Large recordings stream directly via cloud storage.</p>'
+        : '';
+      status.innerHTML = `${icon('check')}<div><strong>The studio is ready for your story.</strong><p>You’ll need this server’s publishing token to upload and publish. ${cloudNotice}</p>${vercelNotice}</div>`;
     } else if (config) {
-      status.innerHTML = `${icon('info')}<div><strong>Creator Studio is in preview mode.</strong><p>To enable publishing, the server administrator must set <code>AUDIORA_ADMIN_TOKEN</code> to at least 24 characters and restart the server. You can keep exploring and listening in the meantime.</p></div>`;
+      status.innerHTML = `${icon('info')}<div><strong>Creator Studio is in preview mode.</strong><p>To enable publishing, set <code>AUDIORA_ADMIN_TOKEN</code> (at least 24 characters) in your environment variables (or Vercel Project Settings) and redeploy. You can keep exploring and listening in the meantime.</p></div>`;
     } else status.textContent = 'Checking whether publishing is available…';
     $('#file-hint').textContent = config
       ? `MP3, M4A, MP4 or WAV audio · up to ${Math.round(config.maxUploadBytes / 1024 / 1024)} MB`
@@ -268,16 +271,43 @@ export class Studio {
         else if (ext === 'mp4') contentType = 'video/mp4';
         else if (ext === 'wav') contentType = 'audio/wav';
         else if (ext === 'aac') contentType = 'audio/aac';
-        const uploaded = await api('/api/uploads', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': contentType,
-            'X-Filename': encodeURIComponent(this.file.name),
-          },
-          body: this.file,
-        });
-        this.upload = uploaded.audioUrl;
+        else if (ext === 'ogg') contentType = 'audio/ogg';
+        else if (ext === 'flac') contentType = 'audio/flac';
+        else if (ext === 'webm') contentType = 'audio/webm';
+
+        let audioUrl = null;
+        const isVercel = this.config?.isVercel || window.location.hostname.includes('vercel.app');
+        const isLargeFile = this.file.size > 4 * 1024 * 1024;
+
+        if (this.config?.supabase?.enabled && (isVercel || isLargeFile)) {
+          this.setStatus('Step 1 of 2 · Uploading to cloud storage…');
+          try {
+            audioUrl = await this.uploadToSupabase(this.file, contentType, ext);
+          } catch (cloudErr) {
+            console.warn('Cloud storage direct upload fallback:', cloudErr.message);
+            if (isVercel && isLargeFile) {
+              throw new Error(
+                `Your file (${(this.file.size / 1024 / 1024).toFixed(1)} MB) exceeds Vercel’s 4.5 MB serverless limit, so direct cloud upload was attempted but failed: ${cloudErr.message}. Ensure your Supabase 'audio' storage bucket is created (see docs/supabase-schema.sql).`,
+              );
+            }
+          }
+        }
+
+        if (!audioUrl) {
+          this.setStatus('Step 1 of 2 · Uploading your audio to server…');
+          const uploaded = await api('/api/uploads', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': contentType,
+              'X-Filename': encodeURIComponent(this.file.name),
+            },
+            body: this.file,
+          });
+          audioUrl = uploaded.audioUrl;
+        }
+
+        this.upload = audioUrl;
       }
       this.setStatus('Step 2 of 2 · Publishing your episode details…');
       const result = await api('/api/episodes', {
@@ -314,5 +344,38 @@ export class Studio {
     status.classList.toggle('is-error', error);
     status.setAttribute('role', error ? 'alert' : 'status');
     status.textContent = message;
+  }
+
+  async uploadToSupabase(file, contentType, ext) {
+    const { url, key } = this.config?.supabase || {};
+    if (!url || !key) throw new Error('Supabase credentials not configured.');
+    const fileId = `${crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2)}.${ext}`;
+    const buckets = ['audio', 'audiora-media', 'recordings'];
+    let lastError = null;
+
+    for (const bucket of buckets) {
+      try {
+        const uploadUrl = `${url}/storage/v1/object/${bucket}/${fileId}`;
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+            'Content-Type': contentType,
+            'x-upsert': 'true',
+          },
+          body: file,
+        });
+
+        if (response.ok) {
+          return `${url}/storage/v1/object/public/${bucket}/${fileId}`;
+        }
+        const errorData = await response.json().catch(() => ({}));
+        lastError = new Error(errorData.message || errorData.error || `HTTP ${response.status}`);
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw lastError || new Error('Could not upload to Supabase storage bucket.');
   }
 }

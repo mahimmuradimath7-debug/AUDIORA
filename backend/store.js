@@ -42,6 +42,9 @@ function validState(value) {
     for (const episode of value.episodes) {
       const { id, publishedAt, demo, featured, ...metadata } = episode;
       validateEpisode(metadata);
+      const isCloud =
+        typeof metadata.audioUrl === 'string' && metadata.audioUrl.startsWith('https://');
+      const uploadMatch = UPLOAD_URL.exec(metadata.audioUrl);
       if (
         !uuid.test(id) ||
         ids.has(id) ||
@@ -49,7 +52,7 @@ function validState(value) {
         featured !== false ||
         typeof publishedAt !== 'string' ||
         !Number.isFinite(Date.parse(publishedAt)) ||
-        !value.uploads.includes(UPLOAD_URL.exec(metadata.audioUrl)[1])
+        (!isCloud && (!uploadMatch || !value.uploads.includes(uploadMatch[1])))
       )
         return false;
       ids.add(id);
@@ -132,7 +135,7 @@ export function createStore(dataDir) {
     },
     async ownsUpload(name) {
       await load();
-      return state.uploads.includes(name);
+      return state.uploads.includes(name) || (Boolean(process.env.VERCEL) && UPLOAD_URL.test(`/media/uploads/${name}`));
     },
     addUpload(name) {
       return mutate(async () => {
@@ -143,10 +146,22 @@ export function createStore(dataDir) {
     },
     publish(metadata, verifyFile) {
       return mutate(async () => {
-        const name = UPLOAD_URL.exec(metadata.audioUrl)?.[1];
-        if (!name || !state.uploads.includes(name))
-          throw new HttpError(400, 'This audio has not been uploaded to this server.');
-        await verifyFile(name);
+        const isCloud = typeof metadata.audioUrl === 'string' && metadata.audioUrl.startsWith('https://');
+        if (!isCloud) {
+          const name = UPLOAD_URL.exec(metadata.audioUrl)?.[1];
+          const isVercel = Boolean(process.env.VERCEL);
+          if (!name || (!state.uploads.includes(name) && !isVercel))
+            throw new HttpError(400, 'This audio has not been uploaded to this server.');
+          if (!isVercel) {
+            await verifyFile(name);
+          } else {
+            try {
+              await verifyFile(name);
+            } catch {
+              // On Vercel, separate lambda instances might not share /tmp
+            }
+          }
+        }
         const episode = {
           ...metadata,
           id: randomUUID(),

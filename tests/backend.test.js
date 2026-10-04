@@ -845,4 +845,17 @@ test('Supabase configuration and status endpoint report cloud settings', async (
   assert.equal(status.url, 'https://example.supabase.co');
 });
 
+test('cloud audio publication and storage compatibility', async (t) => {
+  const f = await fixture(t);
+  const cloudUrl =
+    'https://maivkyqwjlibilmpgmrk.supabase.co/storage/v1/object/public/audio/test-episode.m4a';
+  const pub = await publish(f.url, metadata(cloudUrl), { Origin: f.url });
+  assert.equal(pub.status, 201);
+  const { episode } = await pub.json();
+  assert.equal(episode.audioUrl, cloudUrl);
+
+  const episodes = (await (await fetch(`${f.url}/api/episodes`)).json()).episodes;
+  assert.ok(episodes.some((e) => e.audioUrl === cloudUrl));
+});
+
 

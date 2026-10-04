@@ -11,6 +11,14 @@ export const UUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]
 export const UPLOAD_URL = new RegExp(
   `^/media/uploads/(${UUID_PATTERN}\\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm))$`,
 );
+export const CLOUD_AUDIO_URL = new RegExp(
+  `^https://[a-zA-Z0-9.-]+\\.(?:supabase\\.co|supabase\\.in|vercel-storage\\.com|blob\\.vercel-scripts\\.com)/.*\\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm)(\\?.*)?$`,
+  'i',
+);
+
+export function isValidAudioUrl(url) {
+  return typeof url === 'string' && (UPLOAD_URL.test(url) || CLOUD_AUDIO_URL.test(url));
+}
 const languages = LANGUAGES.map(({ code }) => code);
 const metadataFields = new Set([
   'title',
@@ -70,8 +78,8 @@ export function validateEpisode(input) {
       'Duration must be a number greater than zero and no longer than 24 hours.',
     );
   }
-  if (typeof input.audioUrl !== 'string' || !UPLOAD_URL.test(input.audioUrl)) {
-    throw new HttpError(400, 'Choose a local audio recording uploaded through Creator Studio.');
+  if (!isValidAudioUrl(input.audioUrl)) {
+    throw new HttpError(400, 'Choose a valid local or cloud audio recording.');
   }
   return { ...result, duration: input.duration, audioUrl: input.audioUrl };
 }

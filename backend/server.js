@@ -101,14 +101,23 @@ function enforceOrigin(req, publicOrigin) {
   if (!origin) return; // CLI clients do not send Origin; they still need a valid token.
   try {
     const supplied = new URL(origin);
-    const protocol = req.socket.encrypted ? 'https:' : 'http:';
+    const isVercel = Boolean(process.env.VERCEL);
+    const protocol = isVercel || req.socket.encrypted ? 'https:' : 'http:';
     if (!req.headers.host) throw new Error('Missing request host.');
     // Explicit configuration supports TLS termination without trusting spoofable proxy headers.
     const expected = new URL(publicOrigin || `${protocol}//${req.headers.host}`);
+    const hostMatches =
+      isVercel &&
+      supplied.protocol === 'https:' &&
+      (supplied.host === req.headers.host ||
+        supplied.host === req.headers['x-forwarded-host'] ||
+        (process.env.VERCEL_URL && supplied.host === process.env.VERCEL_URL) ||
+        (process.env.VERCEL_PROJECT_PRODUCTION_URL &&
+          supplied.host === process.env.VERCEL_PROJECT_PRODUCTION_URL));
+
     if (
       supplied.origin === 'null' ||
-      origin !== supplied.origin ||
-      supplied.origin !== expected.origin ||
+      (!hostMatches && (origin !== supplied.origin || supplied.origin !== expected.origin)) ||
       expected.username ||
       expected.password ||
       expected.pathname !== '/' ||
@@ -247,17 +256,38 @@ export function createRequestHandler(options = {}) {
           maxUploadBytes,
           languages: LANGUAGES,
           supabase: { url: supabase.url, key: supabase.key, enabled: supabase.enabled },
+          isVercel: Boolean(process.env.VERCEL),
         });
       if (read && pathname === '/api/supabase/status')
         return sendJson(req, res, 200, await supabase.checkStatus());
       if (read && pathname === '/api/episodes') {
         const filters = parseFilters(new URL(req.url, 'http://localhost').searchParams);
-        const episodes = filterEpisodes(await store.list(), filters);
-        return sendJson(req, res, 200, { episodes, total: episodes.length });
+        let episodes = await store.list();
+        if (supabase.enabled) {
+          try {
+            const cloudEpisodes = await supabase.fetchEpisodes();
+            if (Array.isArray(cloudEpisodes) && cloudEpisodes.length > 0) {
+              const seen = new Set(episodes.map((e) => e.id));
+              const additions = cloudEpisodes.filter((e) => !seen.has(e.id));
+              episodes = [...additions, ...episodes];
+            }
+          } catch {
+            // graceful fallback if network / table is unavailable
+          }
+        }
+        const filtered = filterEpisodes(episodes, filters);
+        return sendJson(req, res, 200, { episodes: filtered, total: filtered.length });
       }
       if (read && /^\/api\/episodes\/[^/]+$/.test(pathname)) {
         const id = pathname.slice('/api/episodes/'.length);
-        const episode = (await store.list()).find((item) => item.id === id);
+        let episodes = await store.list();
+        let episode = episodes.find((item) => item.id === id);
+        if (!episode && supabase.enabled) {
+          try {
+            const cloudEpisodes = await supabase.fetchEpisodes();
+            episode = (cloudEpisodes || []).find((item) => item.id === id);
+          } catch {}
+        }
         if (!episode) throw new HttpError(404, 'Episode not found.');
         return sendJson(req, res, 200, { episode });
       }

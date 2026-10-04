@@ -55,4 +55,14 @@ npx vercel --prod
 
 - **`vercel.json`**: Configures Serverless Function routing and bundles `frontend/`, `media/`, `backend/`, and `data/` assets.
 - **`api/index.js`**: Universal serverless entrypoint that mounts Audiora's request handler.
+- **Serverless & Cloud Storage**: Vercel Serverless Functions enforce a 4.5 MB body limit. Creator Studio uploads recordings over 4.5 MB directly to Supabase Storage (`audio` bucket), streaming them with global CDN speed and byte-range seekability.
 - **Ephemeral Storage**: When running in a Vercel serverless environment (`process.env.VERCEL`), local temporary storage automatically mounts to `/tmp`, while published episodes sync permanently to your configured Supabase Cloud database.
+
+---
+
+### Creator Studio on Vercel Checklist
+
+If uploading from Creator Studio on Vercel is showing an error, ensure:
+1. **`AUDIORA_ADMIN_TOKEN` is set** in Vercel Project Settings &rarr; Environment Variables.
+2. **`SUPABASE_URL` and `SUPABASE_ANON_KEY` are set** in Vercel Environment Variables.
+3. **Supabase Schema is initialized**: Run the script in [`docs/supabase-schema.sql`](./supabase-schema.sql) in your [Supabase SQL Editor](https://supabase.com/dashboard/project/maivkyqwjlibilmpgmrk/sql) to create the `episodes` table and public `audio` storage bucket.
