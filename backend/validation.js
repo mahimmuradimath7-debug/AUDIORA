@@ -8,7 +8,9 @@ export class HttpError extends Error {
 }
 
 export const UUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
-export const UPLOAD_URL = new RegExp(`^/media/uploads/(${UUID_PATTERN}\\.(?:mp3|m4a))$`);
+export const UPLOAD_URL = new RegExp(
+  `^/media/uploads/(${UUID_PATTERN}\\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm))$`,
+);
 const languages = LANGUAGES.map(({ code }) => code);
 const metadataFields = new Set([
   'title',
@@ -69,7 +71,7 @@ export function validateEpisode(input) {
     );
   }
   if (typeof input.audioUrl !== 'string' || !UPLOAD_URL.test(input.audioUrl)) {
-    throw new HttpError(400, 'Choose a local MP3 or M4A uploaded through Creator Studio.');
+    throw new HttpError(400, 'Choose a local audio recording uploaded through Creator Studio.');
   }
   return { ...result, duration: input.duration, audioUrl: input.audioUrl };
 }
@@ -125,9 +127,9 @@ export function validateFilename(header) {
     name.length > 240 ||
     /[/\\\u0000-\u001f\u007f]/u.test(name) ||
     name.startsWith('.') ||
-    !/\.(?:mp3|m4a)$/i.test(name)
+    !/\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm)$/i.test(name)
   ) {
-    throw new HttpError(400, 'Provide a plain .mp3 or .m4a filename in X-Filename.');
+    throw new HttpError(400, 'Provide a plain audio filename in X-Filename.');
   }
 }
 
@@ -185,4 +187,12 @@ export function plausibleM4a(prefix, totalBytes) {
     return true;
   }
   return ['wide', 'free', 'skip'].includes(boxType);
+}
+
+export function plausibleWav(prefix, totalBytes) {
+  if (prefix.length < 12 || totalBytes < 44) return false;
+  return (
+    prefix.subarray(0, 4).toString('latin1') === 'RIFF' &&
+    prefix.subarray(8, 12).toString('latin1') === 'WAVE'
+  );
 }

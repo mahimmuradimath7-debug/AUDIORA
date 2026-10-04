@@ -13,34 +13,85 @@ import { icon } from './icons.js';
 
 function readDuration(file) {
   return new Promise((resolve, reject) => {
-    const audio = new Audio();
+    const isVideo = /\.mp4$/i.test(file.name) || file.type?.startsWith('video/');
+    const media = isVideo ? document.createElement('video') : new Audio();
     const url = URL.createObjectURL(file);
+    let resolved = false;
     const cleanup = () => {
       clearTimeout(timeout);
-      audio.onloadedmetadata = audio.onerror = null;
-      audio.removeAttribute('src');
-      audio.load();
+      media.onloadedmetadata = media.ondurationchange = media.onerror = null;
+      media.removeAttribute('src');
+      media.load();
       URL.revokeObjectURL(url);
     };
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error('We couldn’t read this audio recording’s duration. Try another recording.'));
-    }, 15000);
-    audio.preload = 'metadata';
-    audio.onloadedmetadata = () => {
-      const duration = audio.duration;
-      audio.onloadedmetadata = audio.onerror = null;
-      cleanup();
-      if (Number.isFinite(duration) && duration > 0 && duration <= 86400) resolve(duration);
-      else
-        reject(new Error('Choose an audio recording with a readable duration between 1 second and 24 hours.'));
+    const checkDuration = () => {
+      const duration = media.duration;
+      if (Number.isFinite(duration) && duration > 0 && duration <= 86400) {
+        resolved = true;
+        cleanup();
+        resolve(duration);
+        return true;
+      }
+      return false;
     };
-    audio.onerror = () => {
-      audio.onloadedmetadata = audio.onerror = null;
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        cleanup();
+        reject(
+          new Error(
+            'We couldn’t read this audio recording’s duration in time. Please try another file.',
+          ),
+        );
+      }
+    }, 60000);
+    media.preload = 'metadata';
+    media.onloadedmetadata = () => checkDuration();
+    media.ondurationchange = () => checkDuration();
+    media.onerror = () => {
+      if (resolved) return;
       cleanup();
+      if (!isVideo) {
+        // Fallback: try video element for MP4 containers that Audio() rejected
+        const v = document.createElement('video');
+        const vUrl = URL.createObjectURL(file);
+        let vResolved = false;
+        const vCleanup = () => {
+          clearTimeout(vTimeout);
+          v.onloadedmetadata = v.ondurationchange = v.onerror = null;
+          v.removeAttribute('src');
+          v.load();
+          URL.revokeObjectURL(vUrl);
+        };
+        const vCheck = () => {
+          const d = v.duration;
+          if (Number.isFinite(d) && d > 0 && d <= 86400) {
+            vResolved = true;
+            vCleanup();
+            resolve(d);
+            return true;
+          }
+          return false;
+        };
+        const vTimeout = setTimeout(() => {
+          if (!vResolved) {
+            vCleanup();
+            reject(new Error('We couldn’t read this audio recording’s duration. Try another recording.'));
+          }
+        }, 30000);
+        v.preload = 'metadata';
+        v.onloadedmetadata = () => vCheck();
+        v.ondurationchange = () => vCheck();
+        v.onerror = () => {
+          if (vResolved) return;
+          vCleanup();
+          reject(new Error('This file doesn’t appear to be a playable audio recording. Please choose another.'));
+        };
+        v.src = vUrl;
+        return;
+      }
       reject(new Error('This file doesn’t appear to be a playable audio recording. Please choose another.'));
     };
-    audio.src = url;
+    media.src = url;
   });
 }
 
@@ -61,7 +112,7 @@ export class Studio {
   createDialog() {
     $('#dialog-root').insertAdjacentHTML(
       'beforeend',
-      `<dialog id="studio-dialog" class="studio-dialog" aria-labelledby="studio-heading"><div class="dialog-heading"><div><p class="eyebrow">YOUR VOICE BELONGS HERE</p><h2 id="studio-heading">Creator Studio<span class="violet-period">.</span></h2></div><button class="icon-button" data-close-dialog aria-label="Close Creator Studio">${icon('close')}</button></div><p class="dialog-intro">Make something worth tuning into. Publish your own recording to this Audiora collection.</p><div id="studio-config" class="studio-guidance" role="status">Checking whether publishing is available…</div><form id="studio-form"><fieldset id="studio-fields" disabled><div class="studio-step"><span>01</span><h3>Your recording</h3><small>Local MP3 or M4A audio</small></div><label class="upload-zone" for="studio-file">${icon('upload')}<strong id="file-label">Choose your audio recording</strong><span id="file-hint">MP3 or M4A · checking upload size limit…</span><input type="file" id="studio-file" name="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a,audio/aac" required><span class="file-choose">Choose a file ${icon('plus')}</span></label><p id="file-status" class="field-hint" role="status">Duration is read directly from your audio file.</p><div class="studio-step"><span>02</span><h3>The story behind the sound</h3></div><div class="form-grid"><label class="full-field">Episode title<input name="title" type="text" maxlength="160" required placeholder="A title that makes someone lean in"></label><label>Show name<input name="show" type="text" maxlength="120" required placeholder="The name of your podcast"></label><label>Host / creator<input name="host" type="text" maxlength="100" required placeholder="Your name"></label><label class="full-field">Episode description<textarea name="description" rows="3" maxlength="2000" required placeholder="What’s the story? Give your listeners a little way in."></textarea></label><label>Language<select name="language"><option value="kn">ಕನ್ನಡ · Kannada</option><option value="hi">हिन्दी · Hindi</option><option value="en" selected>English</option></select></label><label>Category<select name="category"><option>Culture</option><option>Stories</option><option>Mindfulness</option><option>Technology</option><option>Creativity</option><option>Life</option></select></label><label>Mood<select name="mood"><option>Curious</option><option>Unwind</option><option>Inspired</option></select></label><label>Cover artwork<select name="artwork" id="studio-artwork"><option value="orbit">Violet orbit</option><option value="sunrise">Golden horizon</option><option value="botanical">Room to grow</option><option value="waves">Quiet waves</option><option value="city">Between the lines</option><option value="bloom">A fresh bloom</option></select></label></div><div class="artwork-preview"><img id="studio-art-preview" src="/assets/orbit.svg" alt="Selected original cover artwork"><span>An original Audiora cover, ready for your story.<br>Your title and show name appear alongside the artwork.</span></div><div class="studio-step"><span>03</span><h3>Ready for the world</h3></div><label class="token-label">Publishing token<input id="studio-token" name="token" type="password" required minlength="24" autocomplete="off" spellcheck="false" placeholder="Enter your server’s admin token" aria-describedby="token-hint"></label><p id="token-hint" class="field-hint">Provided by your server administrator. Kept only in memory and cleared when you close this window. This is not an account or sign-in.</p><div class="studio-submit-row"><p>Publish only recordings you have the right to share.<br>Publishing adds your episode to this server’s collection.</p><button class="button button-violet" id="studio-submit" type="submit">Publish episode ${icon('arrow-up-right')}</button></div></fieldset><div id="studio-status" class="studio-status" role="status" hidden></div></form><p class="studio-storage-note">Audio uploads are stored before publishing. If publication fails, the uploaded file remains on the server; your administrator can remove unused uploads.</p></dialog>`,
+      `<dialog id="studio-dialog" class="studio-dialog" aria-labelledby="studio-heading"><div class="dialog-heading"><div><p class="eyebrow">YOUR VOICE BELONGS HERE</p><h2 id="studio-heading">Creator Studio<span class="violet-period">.</span></h2></div><button class="icon-button" data-close-dialog aria-label="Close Creator Studio">${icon('close')}</button></div><p class="dialog-intro">Make something worth tuning into. Publish your own recording to this Audiora collection.</p><div id="studio-config" class="studio-guidance" role="status">Checking whether publishing is available…</div><form id="studio-form"><fieldset id="studio-fields" disabled><div class="studio-step"><span>01</span><h3>Your recording</h3><small>Local MP3, M4A, MP4 or WAV audio</small></div><label class="upload-zone" for="studio-file">${icon('upload')}<strong id="file-label">Choose your audio recording</strong><span id="file-hint">MP3, M4A, MP4 or WAV · checking upload size limit…</span><input type="file" id="studio-file" name="file" accept=".mp3,.m4a,.mp4,.wav,.aac,.ogg,.flac,.webm,audio/*,video/mp4" required><span class="file-choose">Choose a file ${icon('plus')}</span></label><p id="file-status" class="field-hint" role="status">Duration is read directly from your audio file.</p><div class="studio-step"><span>02</span><h3>The story behind the sound</h3></div><div class="form-grid"><label class="full-field">Episode title<input name="title" type="text" maxlength="160" required placeholder="A title that makes someone lean in"></label><label>Show name<input name="show" type="text" maxlength="120" required placeholder="The name of your podcast"></label><label>Host / creator<input name="host" type="text" maxlength="100" required placeholder="Your name"></label><label class="full-field">Episode description<textarea name="description" rows="3" maxlength="2000" required placeholder="What’s the story? Give your listeners a little way in."></textarea></label><label>Language<select name="language"><option value="kn">ಕನ್ನಡ · Kannada</option><option value="hi">हिन्दी · Hindi</option><option value="en" selected>English</option></select></label><label>Category<select name="category"><option>Culture</option><option>Stories</option><option>Mindfulness</option><option>Technology</option><option>Creativity</option><option>Life</option></select></label><label>Mood<select name="mood"><option>Curious</option><option>Unwind</option><option>Inspired</option></select></label><label>Cover artwork<select name="artwork" id="studio-artwork"><option value="orbit">Violet orbit</option><option value="sunrise">Golden horizon</option><option value="botanical">Room to grow</option><option value="waves">Quiet waves</option><option value="city">Between the lines</option><option value="bloom">A fresh bloom</option></select></label></div><div class="artwork-preview"><img id="studio-art-preview" src="/assets/orbit.svg" alt="Selected original cover artwork"><span>An original Audiora cover, ready for your story.<br>Your title and show name appear alongside the artwork.</span></div><div class="studio-step"><span>03</span><h3>Ready for the world</h3></div><label class="token-label">Publishing token<input id="studio-token" name="token" type="password" required minlength="24" autocomplete="off" spellcheck="false" placeholder="Enter your server’s admin token" aria-describedby="token-hint"></label><p id="token-hint" class="field-hint">Provided by your server administrator. Kept only in memory and cleared when you close this window. This is not an account or sign-in.</p><div class="studio-submit-row"><p>Publish only recordings you have the right to share.<br>Publishing adds your episode to this server’s collection.</p><button class="button button-violet" id="studio-submit" type="submit">Publish episode ${icon('arrow-up-right')}</button></div></fieldset><div id="studio-status" class="studio-status" role="status" hidden></div></form><p class="studio-storage-note">Audio uploads are stored before publishing. If publication fails, the uploaded file remains on the server; your administrator can remove unused uploads.</p></dialog>`,
     );
     this.dialog = $('#studio-dialog');
     setupDialog(this.dialog);
@@ -69,7 +120,13 @@ export class Studio {
 
   bindEvents() {
     $$('.creator-open').forEach((button) =>
-      button.addEventListener('click', () => openDialog(this.dialog)),
+      button.addEventListener('click', () => {
+        openDialog(this.dialog);
+        const savedToken = sessionStorage.getItem('audiora_token');
+        if (savedToken && !$('#studio-token').value) {
+          $('#studio-token').value = savedToken;
+        }
+      }),
     );
     this.dialog.addEventListener('close', () => {
       $('#studio-token').value = '';
@@ -103,8 +160,8 @@ export class Studio {
       status.innerHTML = `${icon('info')}<div><strong>Creator Studio is in preview mode.</strong><p>To enable publishing, the server administrator must set <code>AUDIORA_ADMIN_TOKEN</code> to at least 24 characters and restart the server. You can keep exploring and listening in the meantime.</p></div>`;
     } else status.textContent = 'Checking whether publishing is available…';
     $('#file-hint').textContent = config
-      ? `MP3 or M4A audio · up to ${Math.round(config.maxUploadBytes / 1024 / 1024)} MB`
-      : 'MP3 or M4A · checking upload size limit…';
+      ? `MP3, M4A, MP4 or WAV audio · up to ${Math.round(config.maxUploadBytes / 1024 / 1024)} MB`
+      : 'MP3, M4A, MP4 or WAV · checking upload size limit…';
   }
 
   async chooseFile() {
@@ -119,19 +176,19 @@ export class Studio {
     $('#studio-status').hidden = true;
     $('#file-label').textContent = file?.name || 'Choose your audio recording';
     if (!file) {
-      status.textContent = 'Choose an MP3 or M4A to begin.';
+      status.textContent = 'Choose an MP3, M4A, MP4 or WAV to begin.';
       $('#studio-submit').disabled = false;
       return;
     }
     try {
-      if (!/\.(?:mp3|m4a)$/i.test(file.name))
-        throw new Error('Please choose a file with an .mp3 or .m4a extension.');
+      if (!/\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm)$/i.test(file.name))
+        throw new Error('Please choose a file with an .mp3, .m4a, .mp4, or .wav extension.');
       if (
         file.name.length > 240 ||
         /[/\\\u0000-\u001f\u007f]/u.test(file.name) ||
         file.name.startsWith('.')
       )
-        throw new Error('Use a plain MP3 or M4A filename under 240 characters.');
+        throw new Error('Use a plain audio filename under 240 characters.');
       const allowedTypes = [
         'audio/mpeg',
         'audio/mp3',
@@ -140,9 +197,21 @@ export class Studio {
         'audio/x-m4a',
         'audio/m4a',
         'audio/aac',
+        'video/mp4',
+        'audio/wav',
+        'audio/x-wav',
+        'audio/wave',
+        'audio/ogg',
+        'audio/flac',
+        'audio/webm',
       ];
-      if (file.type && !allowedTypes.includes(file.type))
-        throw new Error('Please choose an MP3 or M4A audio file, not another format.');
+      if (
+        file.type &&
+        !allowedTypes.includes(file.type) &&
+        !file.type.startsWith('audio/') &&
+        !file.type.startsWith('video/mp4')
+      )
+        throw new Error('Please choose an MP3, M4A, MP4 or WAV audio file, not another format.');
       if (!file.size) throw new Error('This file is empty. Choose a playable audio recording.');
       if (file.size > this.config.maxUploadBytes)
         throw new Error(
@@ -178,6 +247,9 @@ export class Studio {
       this.setStatus('The publishing token must be at least 24 characters.', true);
       return;
     }
+    try {
+      sessionStorage.setItem('audiora_token', token);
+    } catch {}
     const metadata = Object.fromEntries(
       ['title', 'show', 'host', 'description', 'language', 'category', 'mood', 'artwork'].map(
         (key) => [key, String(values.get(key) || '').trim()],
@@ -190,8 +262,12 @@ export class Studio {
     try {
       if (!this.upload) {
         this.setStatus('Step 1 of 2 · Uploading your audio…');
-        const isM4a = /\.m4a$/i.test(this.file.name);
-        const contentType = isM4a ? 'audio/mp4' : 'audio/mpeg';
+        const ext = (this.file.name.match(/\.([a-z0-9]+)$/i)?.[1] || 'mp3').toLowerCase();
+        let contentType = 'audio/mpeg';
+        if (ext === 'm4a') contentType = 'audio/mp4';
+        else if (ext === 'mp4') contentType = 'video/mp4';
+        else if (ext === 'wav') contentType = 'audio/wav';
+        else if (ext === 'aac') contentType = 'audio/aac';
         const uploaded = await api('/api/uploads', {
           method: 'POST',
           headers: {

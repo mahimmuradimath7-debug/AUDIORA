@@ -8,6 +8,7 @@ import {
   mp3FrameOffset,
   plausibleMp3,
   plausibleM4a,
+  plausibleWav,
   validateFilename,
 } from './validation.js';
 import { syncDirectory } from './store.js';
@@ -125,13 +126,25 @@ export async function storeUpload(req, { mediaDir, maxUploadBytes, store }) {
   } catch {
     // already checked by validateFilename
   }
-  const isM4a = /\.m4a$/i.test(name);
+  const ext = (name.match(/\.([a-z0-9]+)$/i)?.[1] || 'mp3').toLowerCase();
+  const isMp4OrM4a = ext === 'm4a' || ext === 'mp4';
+  const isWav = ext === 'wav';
+  const isMp3 = ext === 'mp3';
+  const isAac = ext === 'aac';
   const contentType = (req.headers['content-type'] || '').split(';', 1)[0].trim().toLowerCase();
-  if (isM4a) {
-    if (!['audio/mp4', 'audio/x-m4a', 'audio/m4a', 'audio/aac'].includes(contentType)) {
-      throw new HttpError(415, 'Upload an M4A using Content-Type: audio/mp4.');
+  if (isMp4OrM4a) {
+    if (!['audio/mp4', 'audio/x-m4a', 'audio/m4a', 'audio/aac', 'video/mp4'].includes(contentType)) {
+      throw new HttpError(415, 'Upload an MP4/M4A using Content-Type: audio/mp4 or video/mp4.');
     }
-  } else {
+  } else if (isWav) {
+    if (!['audio/wav', 'audio/x-wav', 'audio/wave'].includes(contentType)) {
+      throw new HttpError(415, 'Upload a WAV using Content-Type: audio/wav.');
+    }
+  } else if (isAac) {
+    if (!['audio/aac', 'audio/x-aac'].includes(contentType)) {
+      throw new HttpError(415, 'Upload an AAC using Content-Type: audio/aac.');
+    }
+  } else if (isMp3) {
     if (contentType !== 'audio/mpeg') {
       throw new HttpError(415, 'Upload an MP3 using Content-Type: audio/mpeg.');
     }
@@ -149,7 +162,6 @@ export async function storeUpload(req, { mediaDir, maxUploadBytes, store }) {
   const directory = await lstat(uploadsDir);
   if (!directory.isDirectory() || directory.isSymbolicLink())
     throw new HttpError(500, 'Upload storage is unavailable.');
-  const ext = isM4a ? 'm4a' : 'mp3';
   const filename = `${randomUUID()}.${ext}`;
   const temporary = path.join(uploadsDir, `.${randomUUID()}.part`);
   const destination = path.join(uploadsDir, filename);
@@ -173,10 +185,13 @@ export async function storeUpload(req, { mediaDir, maxUploadBytes, store }) {
         offset += bytesWritten;
       }
     }
-    if (isM4a) {
+    if (isMp4OrM4a) {
       if (!plausibleM4a(prefix, size))
-        throw new HttpError(400, 'The file does not contain a plausible M4A audio header.');
-    } else {
+        throw new HttpError(400, 'The file does not contain a plausible M4A/MP4 audio header.');
+    } else if (isWav) {
+      if (!plausibleWav(prefix, size))
+        throw new HttpError(400, 'The file does not contain a plausible WAV audio header.');
+    } else if (isMp3) {
       const offset = mp3FrameOffset(prefix, size);
       let audioHeader = prefix;
       if (offset !== null && offset > 0) {

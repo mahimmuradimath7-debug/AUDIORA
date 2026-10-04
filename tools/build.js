@@ -44,4 +44,14 @@ if (existsSync(isroSource) && !existsSync(isroUpload)) {
   }
 }
 
+// 5. Copy media folders (ISRO, youtube)
+for (const sub of ['ISRO', 'youtube']) {
+  const src = path.join(mediaDir, sub);
+  const dest = path.join(publicMediaDir, sub);
+  if (existsSync(src)) {
+    mkdirSync(dest, { recursive: true });
+    cpSync(src, dest, { recursive: true });
+  }
+}
+
 console.log('Build completed successfully: assets copied to public/');

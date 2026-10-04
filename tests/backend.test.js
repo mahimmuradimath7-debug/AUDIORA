@@ -35,6 +35,19 @@ const M4A = Buffer.concat([
   ]),
   Buffer.alloc(800, 0xaa),
 ]);
+const WAV = Buffer.concat([
+  Buffer.from('RIFF', 'ascii'),
+  Buffer.from([0x70, 0x00, 0x00, 0x00]),
+  Buffer.from('WAVEfmt ', 'ascii'),
+  Buffer.from([0x10, 0x00, 0x00, 0x00]),
+  Buffer.from([0x01, 0x00, 0x01, 0x00]),
+  Buffer.from([0x44, 0xac, 0x00, 0x00]),
+  Buffer.from([0x88, 0x58, 0x01, 0x00]),
+  Buffer.from([0x02, 0x00, 0x10, 0x00]),
+  Buffer.from('data', 'ascii'),
+  Buffer.from([0x40, 0x00, 0x00, 0x00]),
+  Buffer.alloc(64, 0xbb),
+]);
 const auth = { Authorization: `Bearer ${TOKEN}` };
 
 async function fixture(t, overrides = {}) {
@@ -782,6 +795,40 @@ test('M4A upload, publication, and streaming support', async (t) => {
     }),
     400,
   );
+});
+
+test('MP4 and WAV upload, publication, and streaming support', async (t) => {
+  const f = await fixture(t);
+
+  // Test MP4 upload
+  const mp4Uploaded = await upload(f.url, {
+    body: M4A,
+    headers: { 'Content-Type': 'video/mp4', 'X-Filename': 'recording.mp4' },
+  });
+  assert.equal(mp4Uploaded.status, 201);
+  const { audioUrl: mp4Url } = await mp4Uploaded.json();
+  assert.match(mp4Url, /^\/media\/uploads\/[0-9a-f-]{36}\.mp4$/);
+
+  const mp4Pub = await publish(f.url, metadata(mp4Url), { Origin: f.url });
+  assert.equal(mp4Pub.status, 201);
+  const mp4Audio = await fetch(`${f.url}${mp4Url}`);
+  assert.equal(mp4Audio.status, 200);
+  assert.equal(mp4Audio.headers.get('content-type'), 'video/mp4');
+
+  // Test WAV upload
+  const wavUploaded = await upload(f.url, {
+    body: WAV,
+    headers: { 'Content-Type': 'audio/wav', 'X-Filename': 'recording.wav' },
+  });
+  assert.equal(wavUploaded.status, 201);
+  const { audioUrl: wavUrl } = await wavUploaded.json();
+  assert.match(wavUrl, /^\/media\/uploads\/[0-9a-f-]{36}\.wav$/);
+
+  const wavPub = await publish(f.url, metadata(wavUrl), { Origin: f.url });
+  assert.equal(wavPub.status, 201);
+  const wavAudio = await fetch(`${f.url}${wavUrl}`);
+  assert.equal(wavAudio.status, 200);
+  assert.equal(wavAudio.headers.get('content-type'), 'audio/wav');
 });
 
 test('Supabase configuration and status endpoint report cloud settings', async (t) => {

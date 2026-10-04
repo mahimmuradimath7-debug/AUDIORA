@@ -18,7 +18,7 @@ import {
 
 const projectDir = fileURLToPath(new URL('../', import.meta.url));
 const JSON_LIMIT = 64 * 1024;
-const DEFAULT_UPLOAD_LIMIT = 100 * 1024 * 1024;
+const DEFAULT_UPLOAD_LIMIT = 250 * 1024 * 1024;
 const securityHeaders = {
   'Content-Security-Policy':
     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co; media-src 'self' blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; frame-src 'none'",
@@ -43,6 +43,12 @@ const staticTypes = {
   '.woff': 'font/woff',
   '.mp3': 'audio/mpeg',
   '.m4a': 'audio/mp4',
+  '.mp4': 'video/mp4',
+  '.wav': 'audio/wav',
+  '.aac': 'audio/aac',
+  '.ogg': 'audio/ogg',
+  '.flac': 'audio/flac',
+  '.webm': 'audio/webm',
 };
 
 function sendJson(req, res, status, body) {
@@ -165,7 +171,10 @@ export function createRequestHandler(options = {}) {
       }
     }
   }
-  const mediaDir = path.resolve(options.mediaDir ?? path.join(projectDir, 'media'));
+  const mediaDir = path.resolve(
+    options.mediaDir ??
+      (isVercel ? path.join(tmpdir(), 'audiora-media') : path.join(projectDir, 'media')),
+  );
   const frontendDir = path.resolve(options.frontendDir ?? path.join(projectDir, 'frontend'));
   const adminToken = options.adminToken ?? process.env.AUDIORA_ADMIN_TOKEN ?? '';
   const publicOrigin = options.publicOrigin ?? process.env.PUBLIC_ORIGIN ?? '';
@@ -283,14 +292,21 @@ export function createRequestHandler(options = {}) {
         !pathname.startsWith('/media/uploads/') &&
         !pathname.slice('/media/'.length).includes('/') &&
         !pathname.slice('/media/'.length).startsWith('.') &&
-        /\.(?:mp3|m4a)$/i.test(pathname);
+        /\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm)$/i.test(pathname);
       if (!isRootAudio && (!upload || !(await store.ownsUpload(upload[1]))))
         throw new HttpError(404, 'Audio file not found.');
       const ext = path.extname(pathname).toLowerCase();
-      const contentType = ext === '.m4a' ? 'audio/mp4' : 'audio/mpeg';
-      return serveFile(req, res, mediaDir, pathname.slice('/media/'.length), contentType, {
-        media: true,
-      });
+      const contentType = staticTypes[ext] || 'audio/mpeg';
+      const relative = pathname.slice('/media/'.length);
+      try {
+        return await serveFile(req, res, mediaDir, relative, contentType, { media: true });
+      } catch (err) {
+        if (isVercel && err.status === 404) {
+          const fallbackMedia = path.join(projectDir, 'media');
+          return await serveFile(req, res, fallbackMedia, relative, contentType, { media: true });
+        }
+        throw err;
+      }
     }
     const publicPath = pathname === '/' ? '/index.html' : pathname;
     const extension = path.extname(publicPath).toLowerCase();
