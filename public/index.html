@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f5f0" />
+    <meta
+      name="description"
+      content="Find your frequency. Discover an original, multilingual podcast demo built for thoughtful listening."
+    />
+    <title>Audiora — Find your frequency</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/player.css" />
+    <link rel="stylesheet" href="/dialogs.css" />
+    <link rel="stylesheet" href="/responsive.css" />
+    <link rel="stylesheet" href="/accessibility.css" />
+    <script type="module" src="/js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="/" aria-label="Audiora home"
+        ><img src="/assets/mark.svg" alt="" width="34" height="34" />audiora<span aria-hidden="true"
+          >✦</span
+        ></a
+      >
+      <p class="sidebar-caption">YOUR DAILY RESONANCE</p>
+      <nav class="nav-primary">
+        <button class="nav-link active" data-view="discover" aria-current="page">
+          <span data-icon="compass"></span><span>Discover</span><span class="nav-dot"></span>
+        </button>
+        <button class="nav-link" data-view="library">
+          <span data-icon="bookmark"></span><span>My library</span
+          ><span id="saved-count" class="nav-count">0</span>
+        </button>
+        <button class="nav-link" data-view="history">
+          <span data-icon="history"></span><span>Recently played</span>
+        </button>
+      </nav>
+      <div class="sidebar-divider"></div>
+      <p class="sidebar-caption sidebar-section-label">MAKE ROOM FOR</p>
+      <nav class="nav-moods" aria-label="Discover by mood">
+        <button data-mood="Curious"><span class="mood-dot yellow"></span>A little curiosity</button>
+        <button data-mood="Unwind"><span class="mood-dot lavender"></span>A slower moment</button>
+        <button data-mood="Inspired">
+          <span class="mood-dot peach"></span>A fresh perspective
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="creator-invite">
+          <span class="mini-orbit" aria-hidden="true">✳</span>
+          <h3>Have a story to tell?</h3>
+          <p>There’s a frequency<br />only you can find.</p>
+          <button class="creator-open">
+            Creator Studio <span data-icon="arrow-up-right"></span>
+          </button>
+        </div>
+        <button class="sidebar-help" id="shortcuts-open">
+          <span data-icon="keyboard"></span>Listening shortcuts <kbd>?</kbd>
+        </button>
+        <p class="sidebar-footnote">
+          Made for the way you listen.<br />
+          <span class="sidebar-developer"
+            >made with love by
+            <a
+              href="https://instagram.com/mahim_photopedia_"
+              target="_blank"
+              rel="noopener noreferrer"
+              >@mahim_photopedia_</a
+            ></span
+          >
+        </p>
+      </div>
+    </aside>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <a href="/" class="mobile-brand" aria-label="Audiora home"
+          ><img src="/assets/mark.svg" alt="" width="28" height="28" />audiora</a
+        >
+        <div class="breadcrumb">
+          <span>YOUR SPACE TO TUNE IN</span><span class="small-spark" aria-hidden="true">✳</span>
+        </div>
+        <form class="search" role="search" id="search-form">
+          <span data-icon="search"></span
+          ><input
+            id="search-input"
+            type="search"
+            autocomplete="off"
+            aria-label="Search episodes, shows, or hosts"
+            placeholder="Stories, ideas, and everything in between"
+          /><kbd>/</kbd
+          ><button
+            class="icon-button search-clear"
+            id="search-clear"
+            type="button"
+            aria-label="Clear search"
+            hidden
+          >
+            <span data-icon="close"></span>
+          </button>
+        </form>
+        <button class="top-studio creator-open">
+          <span data-icon="mic"></span><span>Creator Studio</span>
+        </button>
+      </header>
+
+      <main id="main-content" tabindex="-1">
+        <section class="hero" id="discover-hero" aria-labelledby="hero-heading">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="live-dot"></span>LESS SCROLLING. MORE SOUL.</p>
+            <h1 id="hero-heading">Find your<br /><span>frequency.</span></h1>
+            <p class="hero-description">
+              Big ideas. Quiet moments. Stories that stay.<br />A world of listening, in a language
+              that feels like home.
+            </p>
+            <div class="hero-actions">
+              <button class="button button-dark" id="hero-play">
+                <span data-icon="play"></span>Find my next listen</button
+              ><span class="hero-aside">Press play.<br />Be somewhere new.</span>
+            </div>
+            <p class="hero-demo">An original demo collection · 30-second ambient previews</p>
+          </div>
+          <div class="hero-art">
+            <img
+              src="/assets/hero-orbit.svg"
+              alt="Sculptural violet rings orbiting a warm yellow sun"
+              fetchpriority="high"
+            />
+            <div class="hero-art-tag">
+              <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>A
+              little more present.
+            </div>
+            <span class="hero-coordinate" aria-hidden="true">IN GOOD COMPANY / VOL. 01</span>
+          </div>
+        </section>
+
+        <section class="language-section" aria-label="Choose a language">
+          <div class="language-label">
+            <span data-icon="globe"></span>
+            <div>
+              <strong
+                >Many languages.<br class="desktop-break" />
+                One connection.</strong
+              >
+            </div>
+          </div>
+          <div class="language-pills" id="language-pills">
+            <button class="language-pill active" data-language="all" aria-pressed="true">
+              <span>All languages</span><small>A little of everything</small>
+            </button>
+            <button class="language-pill" data-language="kn" aria-pressed="false">
+              <span><span lang="kn">ಕನ್ನಡ</span> <b>Kannada</b></span
+              ><small>Stories close to home</small>
+            </button>
+            <button class="language-pill" data-language="hi" aria-pressed="false">
+              <span><span lang="hi">हिन्दी</span> <b>Hindi</b></span
+              ><small>A familiar feeling</small>
+            </button>
+            <button class="language-pill" data-language="en" aria-pressed="false">
+              <span>English</span><small>A world of perspectives</small>
+            </button>
+          </div>
+        </section>
+
+        <section id="continue-section" class="content-section" hidden>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">RIGHT WHERE YOU LEFT OFF</p>
+              <h2>Welcome back to the story.</h2>
+            </div>
+            <button class="text-button" id="history-link">
+              Your listening history <span data-icon="arrow-right"></span>
+            </button>
+          </div>
+          <div id="continue-grid" class="continue-grid"></div>
+        </section>
+
+        <section class="content-section catalogue-section" aria-labelledby="catalogue-heading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow" id="catalogue-eyebrow">GOOD LISTENING STARTS HERE</p>
+              <h2 id="catalogue-heading">
+                Your next good listen<span class="violet-period">.</span>
+              </h2>
+              <p id="view-description" class="view-description" hidden></p>
+            </div>
+            <span id="result-count" class="result-count" aria-live="polite"></span>
+          </div>
+          <div class="filter-bar">
+            <div
+              class="category-tabs"
+              id="category-tabs"
+              role="group"
+              aria-label="Filter by category"
+            >
+              <button class="active" data-category="all" aria-pressed="true">For you</button
+              ><button data-category="Culture" aria-pressed="false">Culture</button
+              ><button data-category="Stories" aria-pressed="false">Stories</button
+              ><button data-category="Mindfulness" aria-pressed="false">Mindfulness</button
+              ><button data-category="Technology" aria-pressed="false">Technology</button
+              ><button data-category="Creativity" aria-pressed="false">Creativity</button
+              ><button data-category="Life" aria-pressed="false">Life</button>
+            </div>
+            <button id="reset-filters" class="text-button reset-filters" hidden>
+              Clear filters <span data-icon="close"></span>
+            </button>
+          </div>
+          <div id="active-mood" class="active-mood" hidden></div>
+          <div id="catalogue-status" role="status"></div>
+          <div class="episode-grid" id="episode-grid" aria-busy="true"></div>
+        </section>
+
+        <section class="mood-section" id="mood-section" aria-labelledby="mood-heading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">A FEELING IS A GOOD PLACE TO START</p>
+              <h2 id="mood-heading">What’s your headspace?</h2>
+            </div>
+            <span class="handwritten">There’s a listen for that.</span>
+          </div>
+          <div class="mood-grid">
+            <button class="mood-card mood-curious" data-mood="Curious">
+              <span class="mood-art curious-art" aria-hidden="true">✳</span
+              ><span
+                ><small>FOLLOW THE WHAT-IF</small><strong>Feeling curious</strong
+                ><em>A fresh idea goes a long way.</em></span
+              ><span data-icon="arrow-up-right"></span></button
+            ><button class="mood-card mood-unwind" data-mood="Unwind">
+              <span class="mood-art unwind-art" aria-hidden="true">≈</span
+              ><span
+                ><small>TAKE A BREATH</small><strong>Time to unwind</strong
+                ><em>Turn down the noise, tune in.</em></span
+              ><span data-icon="arrow-up-right"></span></button
+            ><button class="mood-card mood-inspired" data-mood="Inspired">
+              <span class="mood-art inspired-art" aria-hidden="true">✺</span
+              ><span
+                ><small>MAKE A LITTLE SPACE</small><strong>Get inspired</strong
+                ><em>Something to spark your next.</em></span
+              ><span data-icon="arrow-up-right"></span>
+            </button>
+          </div>
+        </section>
+        <footer class="page-footer">
+          <span
+            ><img src="/assets/mark-dark.svg" alt="" width="22" height="22" />Good stories. Your
+            pace.</span
+          >
+          <p>
+            Fictional editorial catalogue. Seeded audio is an original ambient demo, not spoken
+            podcasts.<br />Your saved episodes and listening progress stay in this browser.
+            Interface in English.
+            <span class="developer-credit"
+              >· made with love by
+              <a
+                href="https://instagram.com/mahim_photopedia_"
+                target="_blank"
+                rel="noopener noreferrer"
+                >@mahim_photopedia_</a
+              ></span
+            >
+          </p>
+          <button class="text-button" id="about-open">
+            About this collection <span data-icon="arrow-up-right"></span>
+          </button>
+        </footer>
+      </main>
+    </div>
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <button data-view="discover" class="active" aria-current="page">
+        <span data-icon="compass"></span>Discover</button
+      ><button data-view="library"><span data-icon="bookmark"></span>Library</button
+      ><button data-view="history"><span data-icon="history"></span>History</button
+      ><button class="creator-open"><span data-icon="mic"></span>Create</button>
+    </nav>
+
+    <section class="player" aria-label="Audio player" id="player">
+      <div class="player-track">
+        <button id="player-art-button" class="player-art-button" aria-label="Open focus listening">
+          <img id="player-art" src="/assets/orbit.svg" alt="" width="54" height="54" /><span
+            data-icon="expand"
+          ></span>
+        </button>
+        <div class="player-track-info">
+          <strong id="player-title">A little space to listen.</strong
+          ><span id="player-show">Choose a story. Make it your moment.</span
+          ><small id="player-demo">AMBIENT DEMO COLLECTION</small>
+        </div>
+        <button id="player-save" class="icon-button" aria-label="Save current episode" disabled>
+          <span data-icon="bookmark"></span>
+        </button>
+      </div>
+      <div class="player-center">
+        <div class="playback-buttons">
+          <button
+            id="player-shuffle"
+            class="icon-button"
+            aria-label="Play a random episode"
+            title="Surprise me"
+          >
+            <span data-icon="shuffle"></span></button
+          ><button
+            id="skip-back"
+            class="icon-button skip-button"
+            aria-label="Back 15 seconds"
+            disabled
+          >
+            <span data-icon="back15"></span></button
+          ><button id="play-toggle" class="play-toggle" aria-label="Play">
+            <span data-icon="play"></span></button
+          ><button
+            id="skip-forward"
+            class="icon-button skip-button"
+            aria-label="Forward 15 seconds"
+            disabled
+          >
+            <span data-icon="forward15"></span></button
+          ><button id="player-next" class="icon-button" aria-label="Play next in queue" disabled>
+            <span data-icon="next"></span>
+          </button>
+        </div>
+        <div class="seek-row">
+          <time id="current-time">0:00</time
+          ><input
+            id="player-seek"
+            type="range"
+            min="0"
+            max="30"
+            step="0.1"
+            value="0"
+            aria-label="Seek playback"
+            disabled
+          /><time id="duration-time">0:00</time>
+        </div>
+      </div>
+      <div class="player-extras">
+        <button
+          id="speed-button"
+          class="speed-button"
+          aria-label="Playback speed: 1 times"
+          title="Change playback speed"
+        >
+          1×</button
+        ><button
+          id="sleep-open"
+          class="icon-button"
+          aria-label="Set sleep timer"
+          title="Sleep timer"
+        >
+          <span data-icon="moon"></span></button
+        ><button id="volume-toggle" class="icon-button" aria-label="Mute" title="Mute">
+          <span data-icon="volume"></span></button
+        ><input
+          id="player-volume"
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0.8"
+          aria-label="Volume"
+        /><span class="player-divider"></span
+        ><button
+          id="queue-open"
+          class="icon-button queue-toggle"
+          aria-label="Open listening queue"
+          title="Listening queue"
+        >
+          <span data-icon="queue"></span><span id="queue-count" hidden>0</span></button
+        ><button
+          id="focus-open"
+          class="icon-button"
+          aria-label="Open focus listening"
+          title="Focus listening"
+        >
+          <span data-icon="expand"></span>
+        </button>
+      </div>
+      <div id="playback-error" class="playback-error" role="alert" hidden>
+        <span></span><button id="playback-retry">Try again</button
+        ><button id="playback-error-close" aria-label="Dismiss playback error">×</button>
+      </div>
+    </section>
+    <audio id="audio" preload="metadata"></audio>
+    <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+    <div id="dialog-root"></div>
+  </body>
+</html>

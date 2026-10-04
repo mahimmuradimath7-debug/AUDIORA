@@ -9,7 +9,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "node -e 'console.log(\"Audiora is ready for Vercel deployment\")'",
+    "build": "node tools/build.js",
     "setup": "node tools/setup.js",
     "start": "node --env-file-if-exists=.env backend/server.js",
     "dev": "node --env-file-if-exists=.env --watch backend/server.js",

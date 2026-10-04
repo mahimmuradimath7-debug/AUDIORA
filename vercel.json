@@ -1,14 +1,14 @@
 {
   "version": 2,
+  "outputDirectory": "public",
   "functions": {
     "api/index.js": {
-      "includeFiles": "{frontend,media,backend,data}/**",
+      "includeFiles": "{public,media,backend,data}/**",
       "maxDuration": 15
     }
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/media/(.*)", "destination": "/api/index.js" },
-    { "source": "/(.*)", "destination": "/api/index.js" }
+    { "source": "/media/uploads/(.*)", "destination": "/api/index.js" }
   ]
 }
