@@ -1,5 +1,6 @@
 import http from 'node:http';
 import path from 'node:path';
+import { existsSync, mkdirSync, cpSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash, timingSafeEqual } from 'node:crypto';
@@ -152,6 +153,18 @@ export function createRequestHandler(options = {}) {
     options.dataDir ??
       (isVercel ? path.join(tmpdir(), 'audiora-data') : path.join(projectDir, 'data')),
   );
+  if (isVercel) {
+    const seedCatalog = path.join(projectDir, 'data', 'catalog.json');
+    const targetCatalog = path.join(dataDir, 'catalog.json');
+    if (!existsSync(targetCatalog) && existsSync(seedCatalog)) {
+      try {
+        mkdirSync(dataDir, { recursive: true });
+        cpSync(seedCatalog, targetCatalog);
+      } catch {
+        // Fallback gracefully if directory cannot be created
+      }
+    }
+  }
   const mediaDir = path.resolve(options.mediaDir ?? path.join(projectDir, 'media'));
   const frontendDir = path.resolve(options.frontendDir ?? path.join(projectDir, 'frontend'));
   const adminToken = options.adminToken ?? process.env.AUDIORA_ADMIN_TOKEN ?? '';

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "episodes": [
+    {
+      "id": "c9bf1fae-d64c-4069-9324-8256f34edc58",
+      "title": "ಸೈಕಲ್‌ನಿಂದ ಚಂದ್ರಯಾನದವರೆಗೆ: ಇಸ್ರೋದ ಅಸಾಧಾರಣ ಪಯಣ",
+      "show": "ಇಸ್ರೋ ಕಥೆಗಳು · ISRO Stories",
+      "host": "ಮಹಿಮ್ ಎಸ್ ಮುರಡಿಮಠ · Mahim S Muradimath",
+      "description": "ಸೈಕಲ್‌ನಲ್ಲಿ ರಾಕೆಟ್ ಬಿಡಿಭಾಗಗಳನ್ನು ಸಾಗಿಸುತ್ತಿದ್ದ ಆರಂಭಿಕ ದಿನಗಳಿಂದ ಚಂದ್ರಯಾನ ಹಾಗೂ ಮಂಗಳಯಾನದವರೆಗೆ ಭಾರತೀಯ ಬಾಹ್ಯಾಕಾಶ ಸಂಶೋಧನಾ ಸಂಸ್ಥೆಯ (ISRO) ರೋಚಕ ಮತ್ತು ಸ್ಪೂರ್ತಿದಾಯಕ ಐತಿಹಾಸಿಕ ಪಯಣ.",
+      "language": "kn",
+      "category": "Technology",
+      "mood": "Inspired",
+      "artwork": "orbit",
+      "duration": 1315.2,
+      "audioUrl": "/media/uploads/9ba847d1-7cee-4767-8186-32f4b2e809b7.m4a",
+      "publishedAt": "2026-10-04T09:31:20.080Z",
+      "featured": false,
+      "demo": false
+    }
+  ],
+  "uploads": [
+    "9ba847d1-7cee-4767-8186-32f4b2e809b7.m4a"
+  ]
+}
