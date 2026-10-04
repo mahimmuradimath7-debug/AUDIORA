@@ -1,5 +1,6 @@
 import http from 'node:http';
 import path from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { createSupabase } from './supabase.js';
@@ -53,12 +54,26 @@ function sendJson(req, res, status, body) {
 }
 
 function pathnameOf(req) {
-  if (!req.url || !req.url.startsWith('/') || req.url.startsWith('//') || req.url.length > 4096) {
-    throw new HttpError(req.url?.length > 4096 ? 414 : 400, 'Invalid request URL.');
+  let raw = req.url;
+  if (
+    !raw ||
+    raw === '/api/index.js' ||
+    raw.startsWith('/api/index.js?') ||
+    raw === '/api' ||
+    raw.startsWith('/api?')
+  ) {
+    raw =
+      req.headers['x-matched-path'] ||
+      req.headers['x-forwarded-uri'] ||
+      req.headers['x-original-url'] ||
+      raw;
+  }
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//') || raw.length > 4096) {
+    throw new HttpError(raw?.length > 4096 ? 414 : 400, 'Invalid request URL.');
   }
   let pathname;
   try {
-    pathname = decodeURIComponent(req.url.split('?', 1)[0]);
+    pathname = decodeURIComponent(raw.split('?', 1)[0]);
   } catch {
     throw new HttpError(400, 'Invalid URL encoding.');
   }
@@ -130,9 +145,13 @@ async function readJson(req) {
   }
 }
 
-/** Create an unbound server. Every configured path is resolved independently of cwd. */
-export function createApp(options = {}) {
-  const dataDir = path.resolve(options.dataDir ?? path.join(projectDir, 'data'));
+/** Create a request handler suitable for both standalone Node and Vercel serverless functions. */
+export function createRequestHandler(options = {}) {
+  const isVercel = Boolean(process.env.VERCEL);
+  const dataDir = path.resolve(
+    options.dataDir ??
+      (isVercel ? path.join(tmpdir(), 'audiora-data') : path.join(projectDir, 'data')),
+  );
   const mediaDir = path.resolve(options.mediaDir ?? path.join(projectDir, 'media'));
   const frontendDir = path.resolve(options.frontendDir ?? path.join(projectDir, 'frontend'));
   const adminToken = options.adminToken ?? process.env.AUDIORA_ADMIN_TOKEN ?? '';
@@ -274,6 +293,34 @@ export function createApp(options = {}) {
     return serveFile(req, res, frontendDir, publicPath.slice(1), staticTypes[extension]);
   }
 
+  return (req, res) => {
+    for (const [name, value] of Object.entries(securityHeaders)) res.setHeader(name, value);
+    req.on('error', () => {}); // Aborted clients must never crash the process.
+    return route(req, res).catch((error) => {
+      if (res.headersSent || res.destroyed) {
+        if (!res.destroyed) res.destroy();
+        return;
+      }
+      const status = error instanceof HttpError ? error.status : 500;
+      if (status === 401)
+        res.setHeader('WWW-Authenticate', 'Bearer realm="Audiora Creator Studio"');
+      if (!req.complete) {
+        res.setHeader('Connection', 'close');
+        req.resume();
+      }
+      sendJson(req, res, status, {
+        error:
+          error instanceof HttpError
+            ? error.message
+            : 'The server could not complete the request. Please try again.',
+      });
+    });
+  };
+}
+
+/** Create an unbound server. Every configured path is resolved independently of cwd. */
+export function createApp(options = {}) {
+  const handler = createRequestHandler(options);
   const server = http.createServer(
     {
       maxHeaderSize: 16 * 1024,
@@ -282,29 +329,7 @@ export function createApp(options = {}) {
       keepAliveTimeout: 5_000,
       connectionsCheckingInterval: 1_000,
     },
-    (req, res) => {
-      for (const [name, value] of Object.entries(securityHeaders)) res.setHeader(name, value);
-      req.on('error', () => {}); // Aborted clients must never crash the process.
-      route(req, res).catch((error) => {
-        if (res.headersSent || res.destroyed) {
-          if (!res.destroyed) res.destroy();
-          return;
-        }
-        const status = error instanceof HttpError ? error.status : 500;
-        if (status === 401)
-          res.setHeader('WWW-Authenticate', 'Bearer realm="Audiora Creator Studio"');
-        if (!req.complete) {
-          res.setHeader('Connection', 'close');
-          req.resume();
-        }
-        sendJson(req, res, status, {
-          error:
-            error instanceof HttpError
-              ? error.message
-              : 'The server could not complete the request. Please try again.',
-        });
-      });
-    },
+    handler,
   );
   server.timeout = 60_000;
   server.maxRequestsPerSocket = 1000;
