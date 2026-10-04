@@ -331,9 +331,26 @@ export function createRequestHandler(options = {}) {
       try {
         return await serveFile(req, res, mediaDir, relative, contentType, { media: true });
       } catch (err) {
-        if (isVercel && err.status === 404) {
+        if (err.status === 404) {
           const fallbackMedia = path.join(projectDir, 'media');
-          return await serveFile(req, res, fallbackMedia, relative, contentType, { media: true });
+          try {
+            return await serveFile(req, res, fallbackMedia, relative, contentType, { media: true });
+          } catch (fallbackErr) {
+            const publicMedia = path.join(projectDir, 'public', 'media');
+            try {
+              return await serveFile(req, res, publicMedia, relative, contentType, { media: true });
+            } catch (publicErr) {
+              if (upload && supabase.enabled) {
+                const cloudUrl = `${supabase.url}/storage/v1/object/public/audio/${upload[1]}`;
+                res.statusCode = 307;
+                res.setHeader('Location', cloudUrl);
+                res.setHeader('Cache-Control', 'public, max-age=3600');
+                res.end();
+                return;
+              }
+              throw publicErr;
+            }
+          }
         }
         throw err;
       }

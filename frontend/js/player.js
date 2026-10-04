@@ -26,10 +26,15 @@ export class Player {
     this.audio.volume = store.state.volume;
     this.audio.defaultPlaybackRate = store.state.rate;
     this.audio.playbackRate = store.state.rate;
+    this.config = null;
     this.createDialogs();
     this.bindEvents();
     this.updatePreferences();
     this.updateQueue();
+  }
+
+  setConfig(config) {
+    this.config = config;
   }
 
   createDialogs() {
@@ -133,9 +138,19 @@ export class Player {
         toast('End of the episode. Rest easy.');
       } else this.next(false);
     });
-    this.audio.addEventListener('error', () =>
-      this.showError('This audio couldn’t be loaded. Check your connection, then try again.'),
-    );
+    this.audio.addEventListener('error', () => {
+      const uploadMatch = /^\/media\/uploads\/([a-zA-Z0-9_\-.]+\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm))$/i.exec(
+        this.current?.audioUrl || '',
+      );
+      const supabaseUrl = this.config?.supabase?.url || 'https://maivkyqwjlibilmpgmrk.supabase.co';
+      if (uploadMatch && supabaseUrl && !this.audio.src.includes('supabase.co')) {
+        this.audio.src = `${supabaseUrl}/storage/v1/object/public/audio/${uploadMatch[1]}`;
+        this.audio.load();
+        this.play().catch(() => {});
+        return;
+      }
+      this.showError('This audio couldn’t be loaded. Check your connection, then try again.');
+    });
     $('#playback-retry').addEventListener('click', () => this.retry());
     $('#playback-error-close').addEventListener('click', () => {
       $('#playback-error').hidden = $('#focus-error').hidden = true;
@@ -177,11 +192,15 @@ export class Player {
     this.resumePosition = store.state.progress[episode.id]?.completed
       ? 0
       : store.state.progress[episode.id]?.position || 0;
-    // Only play local media returned by the catalogue, never a remote URL.
-    if (
-      !/^\/media\/[a-zA-Z0-9/_\-.]+\.(?:mp3|m4a)$/i.test(episode.audioUrl) ||
-      episode.audioUrl.includes('..')
-    ) {
+    // Play local media returned by the catalogue or trusted Supabase cloud audio.
+    const isLocal =
+      /^\/media\/[a-zA-Z0-9/_\-.]+\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm)$/i.test(episode.audioUrl) &&
+      !episode.audioUrl.includes('..');
+    const isCloud =
+      /^https:\/\/[a-zA-Z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/[a-zA-Z0-9/_\-.]+\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm)$/i.test(
+        episode.audioUrl,
+      );
+    if (!isLocal && !isCloud) {
       this.showError('This episode has an unsupported audio address.');
       return;
     }
@@ -215,6 +234,22 @@ export class Player {
         $('#playback-error').hidden = $('#focus-error').hidden = true;
     } catch (error) {
       if (selection !== this.selection || error.name === 'AbortError') return;
+      const uploadMatch = /^\/media\/uploads\/([a-zA-Z0-9_\-.]+\.(?:mp3|m4a|mp4|wav|aac|ogg|flac|webm))$/i.exec(
+        this.current?.audioUrl || '',
+      );
+      const supabaseUrl = this.config?.supabase?.url || 'https://maivkyqwjlibilmpgmrk.supabase.co';
+      if (uploadMatch && supabaseUrl && !this.audio.src.includes('supabase.co')) {
+        this.audio.src = `${supabaseUrl}/storage/v1/object/public/audio/${uploadMatch[1]}`;
+        try {
+          await this.audio.play();
+          if (selection === this.selection) {
+            $('#playback-error').hidden = $('#focus-error').hidden = true;
+            return;
+          }
+        } catch (cloudErr) {
+          if (cloudErr.name === 'AbortError') return;
+        }
+      }
       this.showError(
         error.name === 'NotAllowedError'
           ? 'Your browser paused playback. Press play to start listening.'

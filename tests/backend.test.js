@@ -858,4 +858,23 @@ test('cloud audio publication and storage compatibility', async (t) => {
   assert.ok(episodes.some((e) => e.audioUrl === cloudUrl));
 });
 
+test('missing upload redirects to Supabase cloud storage when configured', async (t) => {
+  const f = await fixture(t, {
+    supabaseUrl: 'https://example.supabase.co',
+    supabaseKey: 'test-key-12345678901234567890',
+  });
+  const up = await upload(f.url);
+  const { audioUrl } = await up.json();
+  const filePath = path.join(f.mediaDir, audioUrl.slice('/media/'.length));
+  await unlink(filePath);
+
+  const res = await fetch(`${f.url}${audioUrl}`, { redirect: 'manual' });
+  assert.equal(res.status, 307);
+  assert.equal(
+    res.headers.get('location'),
+    `https://example.supabase.co/storage/v1/object/public/audio/${path.basename(audioUrl)}`,
+  );
+});
+
+
 

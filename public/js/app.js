@@ -271,8 +271,11 @@ async function loadCatalogue() {
 
 async function loadConfig() {
   studio.setConfig(null);
+  player.setConfig(null);
   try {
-    studio.setConfig(await api('/api/config'));
+    const config = await api('/api/config');
+    studio.setConfig(config);
+    player.setConfig(config);
   } catch (error) {
     studio.setConfig(null, error.message);
   }
