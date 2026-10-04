@@ -784,3 +784,18 @@ test('M4A upload, publication, and streaming support', async (t) => {
   );
 });
 
+test('Supabase configuration and status endpoint report cloud settings', async (t) => {
+  const f = await fixture(t, {
+    supabaseUrl: 'https://example.supabase.co',
+    supabaseKey: 'test-supabase-key',
+  });
+  const config = await (await fetch(`${f.url}/api/config`)).json();
+  assert.equal(config.supabase?.enabled, true);
+  assert.equal(config.supabase?.url, 'https://example.supabase.co');
+
+  const status = await (await fetch(`${f.url}/api/supabase/status`)).json();
+  assert.equal(status.enabled, true);
+  assert.equal(status.url, 'https://example.supabase.co');
+});
+
+

@@ -95,7 +95,10 @@ export class Studio {
     if (error) {
       status.innerHTML = `${icon('info')}<div><strong>Publishing settings couldn’t be loaded.</strong><p>${esc(error)}</p><button type="button" class="text-button" data-retry-config>Try again ${icon('refresh')}</button></div>`;
     } else if (config?.uploadsEnabled) {
-      status.innerHTML = `${icon('check')}<div><strong>The studio is ready for your story.</strong><p>You’ll need this server’s publishing token to upload and publish.</p></div>`;
+      const cloudNotice = config?.supabase?.enabled
+        ? '<span class="studio-cloud-badge">⚡ Supabase Cloud Connected</span>'
+        : '';
+      status.innerHTML = `${icon('check')}<div><strong>The studio is ready for your story.</strong><p>You’ll need this server’s publishing token to upload and publish. ${cloudNotice}</p></div>`;
     } else if (config) {
       status.innerHTML = `${icon('info')}<div><strong>Creator Studio is in preview mode.</strong><p>To enable publishing, the server administrator must set <code>AUDIORA_ADMIN_TOKEN</code> to at least 24 characters and restart the server. You can keep exploring and listening in the meantime.</p></div>`;
     } else status.textContent = 'Checking whether publishing is available…';

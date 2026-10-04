@@ -2,6 +2,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { createSupabase } from './supabase.js';
 import { LANGUAGES } from './catalogue.js';
 import { createStore } from './store.js';
 import { serveFile, storeUpload, verifyUploadFile } from './files.js';
@@ -18,7 +19,7 @@ const JSON_LIMIT = 64 * 1024;
 const DEFAULT_UPLOAD_LIMIT = 100 * 1024 * 1024;
 const securityHeaders = {
   'Content-Security-Policy':
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; frame-src 'none'",
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.supabase.co; media-src 'self' blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; frame-src 'none'",
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'Referrer-Policy': 'no-referrer',
@@ -153,6 +154,10 @@ export function createApp(options = {}) {
     typeof adminToken === 'string' && adminToken.length >= 24 && !/\s/u.test(adminToken);
   const expectedToken = uploadsEnabled ? createHash('sha256').update(adminToken).digest() : null;
   const store = createStore(dataDir);
+  const supabase = createSupabase({
+    url: options.supabaseUrl ?? process.env.SUPABASE_URL,
+    key: options.supabaseKey ?? process.env.SUPABASE_ANON_KEY ?? process.env.SUPABASE_KEY,
+  });
 
   function authorize(req) {
     if (!uploadsEnabled)
@@ -186,6 +191,9 @@ export function createApp(options = {}) {
         const episode = await store.publish(metadata, (filename) =>
           verifyUploadFile(mediaDir, filename),
         );
+        if (supabase.enabled) {
+          supabase.saveEpisode(episode).catch(() => {});
+        }
         res.setHeader('Location', `/api/episodes/${episode.id}`);
         sendJson(req, res, 201, { episode });
         return;
@@ -193,7 +201,14 @@ export function createApp(options = {}) {
       if (read && pathname === '/api/health')
         return sendJson(req, res, 200, { status: 'ok', name: 'Audiora' });
       if (read && pathname === '/api/config')
-        return sendJson(req, res, 200, { uploadsEnabled, maxUploadBytes, languages: LANGUAGES });
+        return sendJson(req, res, 200, {
+          uploadsEnabled,
+          maxUploadBytes,
+          languages: LANGUAGES,
+          supabase: { url: supabase.url, key: supabase.key, enabled: supabase.enabled },
+        });
+      if (read && pathname === '/api/supabase/status')
+        return sendJson(req, res, 200, await supabase.checkStatus());
       if (read && pathname === '/api/episodes') {
         const filters = parseFilters(new URL(req.url, 'http://localhost').searchParams);
         const episodes = filterEpisodes(await store.list(), filters);
@@ -206,7 +221,13 @@ export function createApp(options = {}) {
         return sendJson(req, res, 200, { episode });
       }
       if (
-        ['/api/episodes', '/api/health', '/api/config', '/api/uploads'].includes(pathname) ||
+        [
+          '/api/episodes',
+          '/api/health',
+          '/api/config',
+          '/api/uploads',
+          '/api/supabase/status',
+        ].includes(pathname) ||
         /^\/api\/episodes\/[^/]+$/.test(pathname)
       ) {
         const allow =
