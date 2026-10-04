@@ -1,0 +1,189 @@
+/* Readable secondary text without losing the quiet editorial palette. */
+:root {
+  --muted: #625e58;
+}
+.sidebar-footnote {
+  color: #b9bdb0;
+}
+.hero-aside,
+.hero-demo {
+  color: #635e54;
+}
+.hero-demo {
+  font-size: 10px;
+}
+.hero-description {
+  font-size: 13px;
+}
+.language-pill b,
+.language-pill small {
+  color: #625e58;
+}
+.language-pill small {
+  font-size: 10px;
+}
+.language-pill.active small {
+  color: #675185;
+}
+.section-heading .eyebrow,
+.result-count {
+  color: #696257;
+  font-size: 10px;
+}
+.category-tabs button {
+  color: #645e55;
+  font-size: 12px;
+}
+.category-tabs button.active {
+  color: #58359c;
+}
+.episode-meta {
+  color: #655e54;
+  font-size: 10px;
+}
+.episode-meta .category {
+  color: #6844ae;
+}
+.episode-title {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.episode-host,
+.episode-host span {
+  color: #625e58;
+  font-size: 11px;
+}
+.demo-label {
+  color: #71614b;
+  font-size: 9px;
+}
+.queue-add {
+  color: #655b4e;
+  font-size: 11px;
+}
+.show-more span {
+  color: #675675;
+  font-size: 10px;
+}
+.handwritten {
+  color: #716558;
+}
+.mood-card small,
+.mood-card em {
+  color: #695d51;
+}
+.mood-card small {
+  font-size: 9px;
+  letter-spacing: 0.8px;
+}
+.mood-card em {
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: normal;
+}
+.page-footer p,
+.page-footer .text-button {
+  color: #625e58;
+  font-size: 10px;
+}
+.player-track-info > span {
+  color: #665e52;
+}
+.player-track-info small {
+  color: #70634f;
+}
+.seek-row time {
+  color: #6a6258;
+  font-size: 10px;
+}
+.focus-top > span {
+  color: #62584e;
+}
+.language-pill,
+.nav-link,
+.category-tabs button {
+  min-height: 36px;
+}
+@media (max-width: 1250px) {
+  .language-section {
+    flex-wrap: wrap;
+  }
+  .language-pills {
+    min-width: 0;
+  }
+  .language-pill small {
+    font-size: 9px;
+  }
+  .mood-grid {
+    grid-template-columns: 1fr;
+  }
+  .mood-card {
+    display: flex;
+    min-height: 112px;
+    padding: 20px;
+  }
+  .mood-art {
+    margin: 0 15px 0 0;
+  }
+}
+@media (max-width: 800px) {
+  .language-section {
+    display: block;
+  }
+  .language-label {
+    margin-bottom: 12px;
+  }
+  .desktop-break {
+    display: none;
+  }
+  .icon-button {
+    min-width: 32px;
+    min-height: 32px;
+  }
+  .category-tabs button {
+    min-height: 40px;
+  }
+  .hero-description {
+    font-size: 12px;
+  }
+  .episode-title {
+    font-size: 13px;
+  }
+  .episode-meta {
+    font-size: 9px;
+  }
+  .form-grid input,
+  .form-grid textarea,
+  .form-grid select,
+  #studio-token {
+    font-size: 16px;
+  }
+}
+@media (max-width: 580px) {
+  .hero-demo {
+    font-size: 9px;
+    line-height: 1.6;
+  }
+  .hero-art {
+    margin-top: 4px;
+  }
+  .player-extras .icon-button {
+    min-width: 28px;
+    min-height: 28px;
+  }
+  .episode-host {
+    font-size: 10px;
+  }
+  .episode-bottom {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .demo-label {
+    font-size: 8px;
+  }
+  .result-count {
+    white-space: normal;
+    font-size: 9px;
+    max-width: 85px;
+  }
+}
