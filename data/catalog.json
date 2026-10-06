@@ -2,6 +2,54 @@
   "version": 1,
   "episodes": [
     {
+      "id": "626e41fc-a26e-4c6a-be53-4358127afe3c",
+      "title": "Why Bhangarh Fort Closes at Sunset",
+      "show": "Rajasthan Files · Horror Stories",
+      "host": "Mahim S Muradimath",
+      "description": "Explore the eerie legends, ancient curses, and unexplained paranormal mysteries surrounding Rajasthan's Bhangarh Fort—India's most infamous haunted ruin where entry after sunset is strictly forbidden by law.",
+      "language": "en",
+      "category": "Horror",
+      "mood": "Curious",
+      "artwork": "city",
+      "duration": 3205.1,
+      "audioUrl": "/media/uploads/b6b8a659-c371-459c-ae05-207daac78382.m4a",
+      "publishedAt": "2026-10-07T00:30:00.000Z",
+      "featured": false,
+      "demo": false
+    },
+    {
+      "id": "35c7b720-f6f6-4cd1-93d2-37d7d7a81861",
+      "title": "भानगढ़ किले की तबाही का सच",
+      "show": "राजस्थान फाइल्स · Rajasthan Files",
+      "host": "महिम एस मुरादीमठ · Mahim S Muradimath",
+      "description": "राजस्थान के ऐतिहासिक भानगढ़ किले के खौफनाक रहस्य, तांत्रिक सिंधु सेवड़ा का विनाशकारी श्राप और राजकुमारी रत्नावती की अनसुलझी दास्तान। जानिए आखिर क्यों सूरज ढलते ही यह किला वीरान और रहस्यमयी हो जाता है।",
+      "language": "hi",
+      "category": "Horror",
+      "mood": "Curious",
+      "artwork": "city",
+      "duration": 845.8,
+      "audioUrl": "/media/uploads/776e53b7-c5d9-4214-8e3f-ab68ec026774.m4a",
+      "publishedAt": "2026-10-07T00:25:00.000Z",
+      "featured": false,
+      "demo": false
+    },
+    {
+      "id": "3ab2c965-d0d0-4b3d-a9f4-0f0585a7d6e9",
+      "title": "ಭಾನಗಢ ಕೋಟೆ ಪತನದ ಅಸಲಿ ಸತ್ಯ",
+      "show": "ರಾಜಸ್ಥಾನ ಫೈಲ್ಸ್ · Rajasthan Files",
+      "host": "ಮಹಿಮ್ ಎಸ್ ಮುರಡಿಮಠ · Mahim S Muradimath",
+      "description": "ಭಾರತದ ಅತ್ಯಂತ ಭಯಾನಕ ಮತ್ತು ನಿಗೂಢ ಸ್ಥಳವೆನಿಸಿದ ರಾಜಸ್ಥಾನದ ಭಾನಗಢ ಕೋಟೆಯ ರಹಸ್ಯಗಳು, ತಾಂತ್ರಿಕ ಸಿಂಧು ಸೇವಡಾನ ಶಾಪ ಮತ್ತು ರಾಣಿ ರತ್ನಾವತಿಯ ಕಥೆ. ಸೂರ್ಯಾಸ್ತದ ನಂತರ ಈ ಕೋಟೆಯ ಪ್ರವೇಶವನ್ನು ಏಕೆ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ ಎಂಬ ರೋಚಕ ರಹಸ್ಯ.",
+      "language": "kn",
+      "category": "Horror",
+      "mood": "Curious",
+      "artwork": "city",
+      "duration": 1067.0,
+      "audioUrl": "/media/uploads/fa60525c-3da0-4188-af11-f375b83fa562.m4a",
+      "publishedAt": "2026-10-07T00:20:00.000Z",
+      "featured": false,
+      "demo": false
+    },
+    {
       "id": "66690a26-871f-4606-b318-25d2d39220e1",
       "title": "How India Reached Mars: From Bicycles to Deep Space",
       "show": "ISRO Stories · The Space Odyssey",
@@ -51,6 +99,9 @@
     }
   ],
   "uploads": [
+    "b6b8a659-c371-459c-ae05-207daac78382.m4a",
+    "776e53b7-c5d9-4214-8e3f-ab68ec026774.m4a",
+    "fa60525c-3da0-4188-af11-f375b83fa562.m4a",
     "a2067ee6-cb12-43e0-a30b-b3db425a3e32.m4a",
     "93b9a78e-d1ed-4628-b396-0f46923c834e.m4a",
     "9ba847d1-7cee-4767-8186-32f4b2e809b7.m4a"

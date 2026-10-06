@@ -11,6 +11,7 @@ export const CATEGORIES = Object.freeze([
   'Technology',
   'Creativity',
   'Life',
+  'Horror',
 ]);
 export const MOODS = Object.freeze(['Curious', 'Unwind', 'Inspired']);
 export const ARTWORKS = Object.freeze(['orbit', 'sunrise', 'botanical', 'waves', 'city', 'bloom']);
