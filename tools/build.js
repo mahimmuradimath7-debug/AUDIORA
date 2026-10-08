@@ -71,6 +71,18 @@ const mappedFiles = [
     src: path.join(mediaDir, 'Rajastan files', 'Kuldhara', 'kannada', 'ಕುಲ್ಧಾರಾ_ಗ್ರಾಮ_ರಾತ್ರೋರಾತ್ರಿ_ಖಾಲಿಯಾದ_ಅಸಲಿ_ಸತ್ಯ.m4a'),
     destName: 'a6c18f71-eb4b-4762-a3d0-fbbad190685f.m4a',
   },
+  {
+    src: path.join(mediaDir, 'Blocked', 'English', 'Why_Being_Blocked_Hurts_So_Much.m4a'),
+    destName: '06885e4e-9c59-4710-98ad-db8faade71e0.m4a',
+  },
+  {
+    src: path.join(mediaDir, 'Blocked', 'hindi', 'एकतरफा_प्यार_में_ब्लॉक_होने_का_दर्द.m4a'),
+    destName: 'bc172835-f53e-4d24-a358-1020bd61c06b.m4a',
+  },
+  {
+    src: path.join(mediaDir, 'Blocked', 'kannada', 'ಕಾರಣವಿಲ್ಲದೆ_ಬ್ಲಾಕ್_ಆದ_ರಾಹುಲ್_ನ_ಪ್ರೇಮಕಥೆ.m4a'),
+    destName: '25bd2d29-180e-4b11-82a2-cbd41c6a2693.m4a',
+  },
 ];
 
 for (const { src, destName } of mappedFiles) {
@@ -84,8 +96,8 @@ for (const { src, destName } of mappedFiles) {
   }
 }
 
-// 5. Copy media folders (ISRO, youtube, Rajastan files)
-for (const sub of ['ISRO', 'youtube', 'Rajastan files']) {
+// 5. Copy media folders (ISRO, youtube, Rajastan files, Blocked)
+for (const sub of ['ISRO', 'youtube', 'Rajastan files', 'Blocked']) {
   const src = path.join(mediaDir, sub);
   const dest = path.join(publicMediaDir, sub);
   if (existsSync(src)) {

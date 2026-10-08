@@ -12,9 +12,10 @@ export const CATEGORIES = Object.freeze([
   'Creativity',
   'Life',
   'Horror',
+  'Romance',
 ]);
 export const MOODS = Object.freeze(['Curious', 'Unwind', 'Inspired']);
-export const ARTWORKS = Object.freeze(['orbit', 'sunrise', 'botanical', 'waves', 'city', 'bloom']);
+export const ARTWORKS = Object.freeze(['orbit', 'sunrise', 'botanical', 'waves', 'city', 'bloom', 'blocked']);
 
 const ideas = [
   [

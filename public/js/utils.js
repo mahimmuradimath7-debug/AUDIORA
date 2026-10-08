@@ -11,8 +11,14 @@ export const durationLabel = (seconds) =>
   seconds < 60 ? `${Math.round(seconds)} sec` : `${Math.ceil(seconds / 60)} min`;
 export const languageLabel = (code) =>
   ({ kn: 'ಕನ್ನಡ', hi: 'हिन्दी', en: 'English' })[code] || 'English';
-export const artwork = (name) =>
-  `/assets/${['orbit', 'sunrise', 'botanical', 'waves', 'city', 'bloom'].includes(name) ? name : 'orbit'}.svg`;
+export const artwork = (name) => {
+  if (name === 'blocked') return '/assets/blocked.jpg';
+  if (name && (name.startsWith('/') || name.startsWith('http://') || name.startsWith('https://'))) return name;
+  if (name && (name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || name.endsWith('.webp') || name.endsWith('.svg'))) {
+    return name.startsWith('/') ? name : `/assets/${name}`;
+  }
+  return `/assets/${['orbit', 'sunrise', 'botanical', 'waves', 'city', 'bloom'].includes(name) ? name : 'orbit'}.svg`;
+};
 
 export async function api(path, options = {}) {
   const response = await fetch(path, {
