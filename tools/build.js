@@ -59,6 +59,18 @@ const mappedFiles = [
     src: path.join(mediaDir, 'Rajastan files', 'bhangar fort', 'kannada', 'ಭಾನಗಢ_ಕೋಟೆ_ಪತನದ_ಅಸಲಿ_ಸತ್ಯ.m4a'),
     destName: 'fa60525c-3da0-4188-af11-f375b83fa562.m4a',
   },
+  {
+    src: path.join(mediaDir, 'Rajastan files', 'Kuldhara', 'english', 'Why_Kuldhara_Was_Abandoned_Overnight.m4a'),
+    destName: 'c7b4412c-450a-49c8-835a-617ea05f03ad.m4a',
+  },
+  {
+    src: path.join(mediaDir, 'Rajastan files', 'Kuldhara', 'hindi', 'कुल्धरा_के_वीरान_होने_का_सच.m4a'),
+    destName: '6ce99580-394a-4a3a-8191-2de8cb65f30f.m4a',
+  },
+  {
+    src: path.join(mediaDir, 'Rajastan files', 'Kuldhara', 'kannada', 'ಕುಲ್ಧಾರಾ_ಗ್ರಾಮ_ರಾತ್ರೋರಾತ್ರಿ_ಖಾಲಿಯಾದ_ಅಸಲಿ_ಸತ್ಯ.m4a'),
+    destName: 'a6c18f71-eb4b-4762-a3d0-fbbad190685f.m4a',
+  },
 ];
 
 for (const { src, destName } of mappedFiles) {
